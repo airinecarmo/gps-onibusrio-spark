@@ -1,0 +1,310 @@
+{% extends "layout.html" %}
+{% block content %}
+	<div class="mapa-bar">
+    <h2>GPS de Ônibus</h2>    
+    <form>
+      <p>Filtros</p>
+      Linha desejada: 
+      <input type="text" name="linha" id="linha">
+      Ônibus desejado: 
+      <input type="text" name="ordem" id="ordem">
+      <input type="button" id="buttonFiltrar" name="my-form" value="Filtrar">
+      <input type="button" id="limpafiltro" name="my-form" value="Limpar"><br>
+      <input type="checkbox" name="velocidade" value="Velocidades" id="veloz">Velocidades<br>
+    </form>
+    <div class="visualizacao">
+      <p>Visualização</p>
+      <button id="limpacalor">Mapa de Calor</button>
+      <button id="limpamarca">Marcadores</button>
+    </div>
+    <img src="{{ url_for('static', filename='img/logo-pesc.png') }}" style="
+    width: 75%;">
+
+  </div>
+  <div id="map" style="width: 85%; height: 100%; position: absolute;  padding: 0px;overflow: hidden;margin-left: 15%;"></div>
+  
+  <script>
+      var mapa = "";
+	  var limpoucalor = "";
+	  var mostrarveloz = "";
+	  
+
+      function Mapa() {		
+      	this.centro_mapa = {lat: -22.916415, lng: -43.438470};
+       	this.map = new google.maps.Map(document.getElementById('map'), {
+            center: this.centro_mapa,
+            scrollwheel: true,
+            zoom: 13
+          });
+
+        this.heatmap = "";	
+        this.circle = "";  
+        this.listaMarcadores = [];	
+		this.listaCircles = [];
+		this.listaPontos = [];  
+      }; 
+
+      Mapa.prototype.setarDados = function(dados){
+        this.listaOnibus = dados;
+      }
+
+    	Mapa.prototype.criarMarcadores = function(){		
+    		for(var i in this.listaOnibus){	  				
+    			var marker = new google.maps.Marker({
+    				position: {lat: parseFloat(this.listaOnibus[i].latitude), 
+    						   lng: parseFloat(this.listaOnibus[i].longitude)},
+    				map: this.map,
+    			});
+
+    			marker.dataHora = this.listaOnibus[i].dataHora;
+    			marker.ordem = this.listaOnibus[i].ordem;
+    			marker.linha = this.listaOnibus[i].linha;
+    			marker.velocidade = this.listaOnibus[i].velocidade;					
+    			marker.latitude = parseFloat(this.listaOnibus[i].latitude);
+    			marker.longitude = parseFloat(this.listaOnibus[i].longitude);
+
+    			marker.addListener('click', function() {
+    				var contentString = '<div id="infowindow">'+
+    									'<div class="titulo-info">Linha: '+(this.linha === undefined ? '-' : this.linha)+'</div>'+
+                      '<div class="item"><span>Data/Hora:</span> '+(this.dataHora === undefined ? '-' : this.dataHora)+'</div>'+
+    									'<div class="item"><span>Ordem: </span>'+(this.ordem === undefined ? '-' : this.ordem)+'</div>'+
+    									'<div class="item"><span>Latitude: </span>'+(this.latitude === undefined ? '-' : this.latitude)+'</div>'+
+    									'<div class="item"><span>Longitude: </span>'+(this.longitude === undefined ? '-' : this.longitude)+'</div>'+
+    									'<div class="item"><span>Velocidade: </span>'+(this.velocidade === undefined ? '-' : this.velocidade)+'</div>'+
+    							    '</div>';
+
+    				var infowindow = new google.maps.InfoWindow({
+    				    content: contentString
+    				});
+
+    				infowindow.open(this.map, this);
+    			});
+
+    			this.listaMarcadores.push(marker);		
+    		}
+    	};
+
+      Mapa.prototype.criarCircle = function(){
+        for(var i in this.listaOnibus){
+           var circ = new google.maps.Circle({
+			  strokeColor: '#FF0000',
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              fillColor: '#FF0000',
+              fillOpacity: 0.35,
+              map: this.map,
+              center: {lat: parseFloat(this.listaOnibus[i].latitude), lng: parseFloat(this.listaOnibus[i].longitude)},
+              radius: parseFloat(this.listaOnibus[i].velocidade)*5,
+		   });
+		   this.listaCircles.push(circ);
+        }
+      }
+
+	
+	      Mapa.prototype.criarHeatmap = function(){
+
+          		for(var i in this.listaOnibus){
+          			var latitude = parseFloat(this.listaOnibus[i].latitude);
+          			var longitude = parseFloat(this.listaOnibus[i].longitude);
+
+          			if(!isNaN(latitude) && !isNaN(longitude)){      			
+          				this.listaPontos.push(new google.maps.LatLng(latitude, longitude));	
+          			}      			
+          		}
+    			
+    			this.heatmap = new google.maps.visualization.HeatmapLayer({
+    	        	data: this.listaPontos,
+    	          	map: this.map
+    	        });
+
+    	        var gradient = [
+                    'rgba(0, 255, 255, 0)',
+                    '#ffe500',
+                    '#ffd200',
+                    '#ffbf00',
+                    '#ffac00',
+                    '#ff9900',
+                    '#ff8600',
+                    '#ff7200',
+                    '#ff5f00',
+                    '#ff4c00',
+                    '#ff3900',
+                    '#ff2600',
+                    '#ff1300',
+                    '#ff0000'
+                ];
+			
+                this.heatmap.set('gradient', gradient);
+                this.heatmap.set('maxIntensity', 20);
+                this.heatmap.set('opacity', 0.8);
+                this.heatmap.set('radius', 30);
+          }
+				
+
+          Mapa.prototype.limparHeatmap = function(){
+          		this.heatmap.setMap(null);
+			    this.heatmap.getData().j = [];
+			    this.heatmap.setMap(map);
+			    this.listaPontos = [];
+          		   		
+          }
+
+          Mapa.prototype.limparMarcadores = function(){
+          		for(var i in this.listaMarcadores){
+          			this.listaMarcadores[i].setMap(null);
+          			this.listaMarcadores[i] = "";      		
+          		} 
+          		this.listaMarcadores = [];     		
+          }
+
+		  Mapa.prototype.limparCircle = function(){
+			  for(var i in this.listaCircles){
+				  this.listaCircles[i].setMap(null);
+              	  this.listaCircles[i] = ""; 
+			  }
+			  this.listaCircles = [];
+          }
+	
+			
+      	function initMap() {
+
+      		$.get("/onibus-json/all/all", function(data, status){
+      			listaOnibus = JSON.parse(data);	  	
+      				  		
+      			mapa = new Mapa();
+           		mapa.setarDados(listaOnibus)
+      			mapa.criarMarcadores();	  			
+      			mapa.criarHeatmap();
+            //mapa.criarCircle();
+
+    		//	setTimeout(function(){ mapa.limparHeatmap() }, 4000);
+    	 	//	setTimeout(function(){ mapa.limparMarcadores() }, 4000);
+    			
+    	  	});	  	  	
+    	}
+	  
+	  
+      	function reloadMap() {
+
+      		var linha = "all";
+            var ordem = "all";
+
+            if($("[name=linha]").val() != ""){
+              linha = $("[name=linha]").val();
+            }
+
+            if($("[name=ordem]").val() != ""){
+              ordem = $("[name=ordem]").val();
+            }
+
+            $.get("/onibus-json/"+ linha + "/" + ordem, function(data) {
+                listaOnibus = JSON.parse(data);          
+                        
+                mapa.limparMarcadores();
+                mapa.limparHeatmap();
+				mapa.limparCircle();
+                
+                mapa.setarDados(listaOnibus)
+				mapa.criarMarcadores();         
+                
+				if (limpoucalor !== "sim") {
+					mapa.criarHeatmap();
+				}
+				
+				if (mostrarveloz == "sim") {
+					mapa.criarCircle();
+				}
+                
+            });
+    	}
+
+      $(document).ready(function() {
+        $("#buttonFiltrar").click(function(){
+            /*$.get("/onibus-json/", function(data, status){
+              listaOnibus = JSON.parse(data);     
+                      
+              var mapa = new Mapa(listaOnibus);
+              mapa.criarMarcadores();         
+              mapa.criarHeatmap();
+            });*/ 
+            var linha = "all";
+            var ordem = "all";
+
+            if($("[name=linha]").val() != ""){
+              linha = $("[name=linha]").val();
+            }
+
+            if($("[name=ordem]").val() != ""){
+              ordem = $("[name=ordem]").val();
+            }
+
+            $.get("/onibus-json/"+ linha + "/" + ordem, function(data) {
+                listaOnibus = JSON.parse(data);          
+                        
+                mapa.limparMarcadores();
+                
+				mapa.limparCircle();
+                
+                mapa.setarDados(listaOnibus)
+                mapa.limparHeatmap();
+				mapa.criarMarcadores();         
+                mapa.criarHeatmap();
+            });
+
+              /*$.ajax({
+                url: "/onibus-json/",            
+                data: { "linha" : $("[name=linha]").val()},                              
+                success: function( response ) {
+                    console.log(response);
+                }
+            });*/
+        });
+
+        $("#limpamarca").on('click',function(){
+          mapa.limparMarcadores();
+        });
+		  
+		
+        $("#limpacalor").on('click',function(){
+          mapa.limparHeatmap();
+		  limpoucalor = "sim";
+        });
+
+        $("#veloz").change(function() {
+           if(this.checked) {
+             mapa.criarCircle();
+			 mostrarveloz = "sim";
+          }
+          else{
+            mapa.limparCircle();
+		  }
+        });
+		  
+        $("#limpafiltro").on('click',function(){
+          var linha = "all";
+          var ordem = "all";
+		  limpoucalor = "";
+	      mostrarveloz = "";
+		  $("#veloz").prop('checked', false);
+          $.get("/onibus-json/"+ linha + "/" + ordem, function(data) {
+                listaOnibus = JSON.parse(data);          
+                        
+                mapa.limparMarcadores();
+                mapa.limparHeatmap();
+                mapa.limparCircle();
+			  
+                mapa.setarDados(listaOnibus)
+                mapa.criarMarcadores();         
+                mapa.criarHeatmap();
+			    
+          });
+          //$("#linha").val("");
+          //$("#ordem").val("");
+      
+        });
+      });
+    		
+    	setInterval(function(){reloadMap()}, 60000);
+    </script>
+
+{% endblock %}

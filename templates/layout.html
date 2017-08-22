@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GPS de Ônibus</title>    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA97p6xmD3K-SMVWqbhee50VKhdG6k_Byg&libraries=visualization&callback=initMap"
+    async defer></script>
+  </head>
+  <body style="width: 100%; height: 100%; padding: 0px; margin: 0px !important;background: #9da8ad;font-family: sans-serif, Roboto;">   
+        
+    <div class="container" style="width: 100%; height: 100%; padding: 0px;">
+      {% block content %}
+      {% endblock %}
+    </div>
+     
+  </body>
+</html>

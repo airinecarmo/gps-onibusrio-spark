@@ -1,0 +1,74 @@
+input[type="button" i], button, input[type="submit" i]{
+	padding: 7px 30px;
+    background: #516a75;
+    border: none;
+    box-shadow: 2px 2px 0px #314148;
+    text-transform: uppercase;
+    border-radius: 4px;
+    margin: 5px 0px;
+    color: white;
+}
+
+input[type="text" i] {
+	background: #d3d9dc;
+    border: none;
+    padding: 5px;
+    margin: 5px 0px;
+    width: 75%;
+    box-sizing: border-box;
+    display: block;
+}
+
+#infowindow{
+    padding: 0px 0px 10px 0px;
+}
+
+#infowindow .titulo-info{
+    font-size: 15px;
+    padding: 10px 0px 10px 5px;
+    color: #516a75;
+    margin: 1px 1px 5px 1px;
+    font-weight: bold;
+    border-radius: 2px 2px 0 0;
+}
+
+#infowindow .item{
+        margin: 5px 0px 0px 5px;
+}
+
+#infowindow .item span{
+    font-weight: bold;
+}
+
+.mapa-bar{
+    width: 15%;float: left;height: 100%;background: #9da8ad;color: #1f2a2f;
+}
+
+.mapa-bar h2{
+    color: #e0e0e0;padding: 20px 5px;background: #516a75;margin: 0px 0px 20px 0px;color: white;font-family: sans-serif, Roboto;font-size: 18px;text-align: center;
+}
+
+.mapa-bar form{
+    margin: 0px 5px;
+}
+
+.mapa-bar p{
+    margin-bottom: 10px;font-weight: bold;padding-top: 0px;color: #2a383e;border-bottom: 1px solid #516a75;padding-bottom: 10px;
+}
+
+.mapa-bar .visualizacao{
+    margin: 0px 5px;
+}
+
+.mapa-bar .visualizacao p{
+    margin-bottom: 10px;padding-top: 10px;border-bottom: 1px solid #516a75;font-weight: bold;color: #2a383e;padding-bottom: 10px;
+}
+
+#map{
+    width: 85%; height: 100%; position: absolute;  padding: 0px;overflow: hidden;margin-left: 15%;
+}
+
+.titulo{
+    font-size: 24px;padding: 20px 5px;background: #516a75;margin: 0px;color: white;font-family: sans-serif, Roboto;font-size: 20px;text-align: center;
+}
+.legenda{margin: 0px;padding-top: 10px;}
